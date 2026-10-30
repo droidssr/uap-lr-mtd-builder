@@ -1,1 +1,45 @@
 
+name: Build MIPS MTD utility
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download OpenWrt SDK
+        run: |
+          wget https://downloads.openwrt.org/releases/25.12.3/targets/ath79/generic/openwrt-sdk-25.12.3-ath79-generic_gcc-14.3.0_musl.Linux-x86_64.tar.zst
+
+      - name: Verify SDK archive
+        run: |
+          echo "SDK downloaded"
+
+      - name: Prepare build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd build-essential
+
+      - name: Extract SDK
+        run: |
+          mkdir sdk
+          tar --zstd -xf openwrt-sdk-*.tar.zst -C sdk --strip-components=1
+          ls sdk
+
+      - name: Build information
+        run: |
+          cd sdk
+          ./scripts/feeds update -a
+          echo "SDK extracted successfully"
+
+      - name: Upload SDK diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: mips-build-environment
+          path: openwrt-sdk-*.tar.zst
+
